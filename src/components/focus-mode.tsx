@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Settings, 
-  Volume2, 
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Settings,
+  Volume2,
   VolumeX,
   Moon,
   Sun,
@@ -20,7 +20,8 @@ import {
   Zap,
   BookOpen,
   CheckCircle,
-  Clock
+  Clock,
+  X
 } from 'lucide-react'
 
 interface PomodoroSettings {
@@ -36,7 +37,11 @@ interface StudySession {
   completed: boolean
 }
 
-export default function FocusMode() {
+interface FocusModeProps {
+  onClose?: () => void
+}
+
+export default function FocusMode({ onClose }: FocusModeProps) {
   const [isActive, setIsActive] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [timeLeft, setTimeLeft] = useState(25 * 60) // 25 minutes in seconds
@@ -188,7 +193,7 @@ export default function FocusMode() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -211,6 +216,16 @@ export default function FocusMode() {
             >
               <Settings className="w-4 h-4" />
             </Button>
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                aria-label="Fechar modo foco"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
 
