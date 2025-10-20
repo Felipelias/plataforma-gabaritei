@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import FocusMode from "@/components/focus-mode"
 import SimulationMode from "@/components/simulation-mode"
+import FullscreenOverlay from "@/components/ui/fullscreen-overlay"
 import {
   Trophy,
   BookOpen,
@@ -187,33 +188,29 @@ export default function SimuladosPage() {
     setSelectedSimulation(null)
   }
 
-  const renderSimulationOverlay = () => {
-    if (!showSimulation || !selectedSimulation) return null
+  const renderSimulationOverlay = () => (
+    <FullscreenOverlay
+      isOpen={Boolean(showSimulation && selectedSimulation)}
+      onClose={closeSimulation}
+    >
+      {selectedSimulation && (
+        <SimulationMode
+          onExit={closeSimulation}
+          title={selectedSimulation.nome}
+          description={selectedSimulation.descricao}
+        />
+      )}
+    </FullscreenOverlay>
+  )
 
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-        <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
-          <SimulationMode
-            onExit={closeSimulation}
-            title={selectedSimulation.nome}
-            description={selectedSimulation.descricao}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  const renderFocusOverlay = () => {
-    if (!showFocusMode) return null
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-        <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
-          <FocusMode onClose={() => setShowFocusMode(false)} />
-        </div>
-      </div>
-    )
-  }
+  const renderFocusOverlay = () => (
+    <FullscreenOverlay
+      isOpen={showFocusMode}
+      onClose={() => setShowFocusMode(false)}
+    >
+      <FocusMode onClose={() => setShowFocusMode(false)} />
+    </FullscreenOverlay>
+  )
 
   const renderDashboard = () => (
     <div className="space-y-6">

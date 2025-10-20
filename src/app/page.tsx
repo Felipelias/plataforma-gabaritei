@@ -36,6 +36,7 @@ import {
 import OnboardingFlow from '@/components/onboarding-flow'
 import Dashboard from '@/components/dashboard'
 import FocusMode from '@/components/focus-mode'
+import FullscreenOverlay from '@/components/ui/fullscreen-overlay'
 
 export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -469,17 +470,14 @@ export default function Home() {
     )
   }
 
-  const renderFocusModeOverlay = () => {
-    if (!showFocusMode) return null
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-        <div className="w-full max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
-          <FocusMode onClose={() => setShowFocusMode(false)} />
-        </div>
-      </div>
-    )
-  }
+  const renderFocusModeOverlay = () => (
+    <FullscreenOverlay
+      isOpen={showFocusMode}
+      onClose={() => setShowFocusMode(false)}
+    >
+      <FocusMode onClose={() => setShowFocusMode(false)} />
+    </FullscreenOverlay>
+  )
 
   if (showDashboard) {
     return <Dashboard userPaid={userPaid} onPaymentRequired={handlePaymentRequired} />
