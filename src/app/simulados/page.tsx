@@ -1,11 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import FocusMode from "@/components/focus-mode"
+import SimulationMode from "@/components/simulation-mode"
+import FullscreenOverlay from "@/components/ui/fullscreen-overlay"
 import {
   Trophy,
   BookOpen,
@@ -15,8 +17,6 @@ import {
   Award,
   CheckCircle,
   Play,
-  PauseCircle,
-  RotateCcw,
   Settings,
   User,
   LogOut,
@@ -145,11 +145,17 @@ const materias = [
   "Inglês",
 ]
 
+type SimulationOption = {
+  id: string
+  nome: string
+  descricao: string
+}
+
 export default function SimuladosPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
-  const [focusMode, setFocusMode] = useState(false)
-  const [focusTime, setFocusTime] = useState(25 * 60) // pomodoro
-  const [isRunning, setIsRunning] = useState(false)
+  const [showFocusMode, setShowFocusMode] = useState(false)
+  const [showSimulation, setShowSimulation] = useState(false)
+  const [selectedSimulation, setSelectedSimulation] = useState<SimulationOption | null>(null)
 
   // Dados simulados do usuário
   const userData = {
@@ -164,11 +170,47 @@ export default function SimuladosPage() {
     weeklyProgress: 15,
   }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  const openSimulation = (simulation: SimulationOption) => {
+    setSelectedSimulation(simulation)
+    setShowSimulation(true)
   }
+
+  const openSubjectSimulation = (subject: string) => {
+    openSimulation({
+      id: `materia-${subject.toLowerCase()}`,
+      nome: `Simulado de ${subject}`,
+      descricao: `Questões focadas em ${subject}`,
+    })
+  }
+
+  const closeSimulation = () => {
+    setShowSimulation(false)
+    setSelectedSimulation(null)
+  }
+
+  const renderSimulationOverlay = () => (
+    <FullscreenOverlay
+      isOpen={Boolean(showSimulation && selectedSimulation)}
+      onClose={closeSimulation}
+    >
+      {selectedSimulation && (
+        <SimulationMode
+          onExit={closeSimulation}
+          title={selectedSimulation.nome}
+          description={selectedSimulation.descricao}
+        />
+      )}
+    </FullscreenOverlay>
+  )
+
+  const renderFocusOverlay = () => (
+    <FullscreenOverlay
+      isOpen={showFocusMode}
+      onClose={() => setShowFocusMode(false)}
+    >
+      <FocusMode onClose={() => setShowFocusMode(false)} />
+    </FullscreenOverlay>
+  )
 
   const renderDashboard = () => (
     <div className="space-y-6">
@@ -239,7 +281,13 @@ export default function SimuladosPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setActiveTab("foco")}>
+        <Card
+          className="hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => {
+            setActiveTab("foco")
+            setShowFocusMode(true)
+          }}
+        >
           <CardContent className="p-6 text-center">
             <Zap className="w-12 h-12 text-purple-600 mx-auto mb-4" />
             <h3 className="font-semibold mb-2">Modo Foco</h3>
@@ -288,11 +336,14 @@ export default function SimuladosPage() {
                       <span className="font-medium">—</span>
                     </div>
 
-                    <Button asChild className="w-full mt-2">
-                      <Link href={`/simulados/${sim.id}`}>
-                        <Play className="w-4 h-4 mr-2" />
-                        Iniciar Simulado
-                      </Link>
+                    <Button
+                      className="w-full mt-2"
+                      onClick={() =>
+                        openSimulation({ id: sim.id, nome: sim.nome, descricao: sim.descricao })
+                      }
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Iniciar Simulado
                     </Button>
                   </div>
                 </CardContent>
@@ -311,11 +362,14 @@ export default function SimuladosPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {materias.map((materia) => (
-              <Button asChild key={materia} variant="outline" className="h-16 flex flex-col">
-                <Link href={`/simulados/materia/${materia.toLowerCase()}`}>
-                  <span className="font-medium">{materia}</span>
-                  <span className="text-xs text-gray-500">200+ questões</span>
-                </Link>
+              <Button
+                key={materia}
+                variant="outline"
+                className="h-16 flex flex-col"
+                onClick={() => openSubjectSimulation(materia)}
+              >
+                <span className="font-medium">{materia}</span>
+                <span className="text-xs text-gray-500">200+ questões</span>
               </Button>
             ))}
           </div>
@@ -410,55 +464,51 @@ export default function SimuladosPage() {
   )
 
   const renderFocusMode = () => (
-    <div className="max-w-md mx-auto">
-      <Card className="bg-gradient-to-br from-purple-50 to-indigo-50">
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <Card className="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="flex items-center justify-center gap-2 text-2xl">
             <Zap className="w-6 h-6 text-purple-600" />
-            Modo Foco
+            Ative o modo foco completo
           </CardTitle>
+          <CardDescription className="text-base text-gray-600">
+            Concentre-se com ciclos Pomodoro, sons ambiente e estatísticas de produtividade em tempo real.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="text-center space-y-6">
-          <div className="text-6xl font-bold text-purple-600">{formatTime(focusTime)}</div>
-
-          <div className="flex justify-center gap-4">
-            <Button onClick={() => setIsRunning(!isRunning)} className={isRunning ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"}>
-              {isRunning ? <PauseCircle className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-              {isRunning ? "Pausar" : "Iniciar"}
-            </Button>
-
-            <Button variant="outline" onClick={() => setFocusTime(25 * 60)}>
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Resetar
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-sm">
-            <Button variant="outline" size="sm" onClick={() => setFocusTime(15 * 60)}>
-              15 min
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setFocusTime(25 * 60)}>
-              25 min
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setFocusTime(45 * 60)}>
-              45 min
-            </Button>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg">
-            <h4 className="font-medium mb-2">Ambiente de Foco</h4>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">
-                🎵 Música Relaxante
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                🌙 Modo Noturno
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                📵 Bloquear Distrações
-              </Button>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 sm:grid-cols-3 text-left">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h4 className="font-semibold text-purple-600 mb-1">Ciclos inteligentes</h4>
+              <p className="text-sm text-gray-600">Sessões automáticas com ajustes para pausas curtas e longas.</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h4 className="font-semibold text-purple-600 mb-1">Ambiente relaxante</h4>
+              <p className="text-sm text-gray-600">Selecione trilhas sonoras e modos de iluminação para estudar melhor.</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <h4 className="font-semibold text-purple-600 mb-1">Insights imediatos</h4>
+              <p className="text-sm text-gray-600">Acompanhe sessões concluídas, matérias e metas de estudo diárias.</p>
             </div>
           </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8"
+              size="lg"
+              onClick={() => setShowFocusMode(true)}
+            >
+              <Timer className="w-5 h-5 mr-2" />
+              Abrir Modo Foco
+            </Button>
+            <Button variant="outline" size="lg" className="px-8" onClick={() => setActiveTab("dashboard")}>
+              <Home className="w-5 h-5 mr-2" />
+              Voltar para o painel
+            </Button>
+          </div>
+
+          <p className="text-sm text-gray-600 text-center">
+            Dica: combine o modo foco com simulados rápidos para reforçar o conteúdo estudado em cada sessão.
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -595,6 +645,8 @@ export default function SimuladosPage() {
           </div>
         </div>
       </div>
+      {renderSimulationOverlay()}
+      {renderFocusOverlay()}
     </div>
   )
 }

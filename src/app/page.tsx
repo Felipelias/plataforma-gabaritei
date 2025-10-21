@@ -35,6 +35,8 @@ import {
 } from 'lucide-react'
 import OnboardingFlow from '@/components/onboarding-flow'
 import Dashboard from '@/components/dashboard'
+import FocusMode from '@/components/focus-mode'
+import FullscreenOverlay from '@/components/ui/fullscreen-overlay'
 
 export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -43,6 +45,7 @@ export default function Home() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [userPaid, setUserPaid] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showFocusMode, setShowFocusMode] = useState(false)
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
@@ -467,6 +470,15 @@ export default function Home() {
     )
   }
 
+  const renderFocusModeOverlay = () => (
+    <FullscreenOverlay
+      isOpen={showFocusMode}
+      onClose={() => setShowFocusMode(false)}
+    >
+      <FocusMode onClose={() => setShowFocusMode(false)} />
+    </FullscreenOverlay>
+  )
+
   if (showDashboard) {
     return <Dashboard userPaid={userPaid} onPaymentRequired={handlePaymentRequired} />
   }
@@ -528,8 +540,8 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6"
               onClick={() => setShowOnboarding(true)}
             >
@@ -539,6 +551,15 @@ export default function Home() {
             <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2">
               <Users className="w-5 h-5 mr-2" />
               Ver Casos de Sucesso
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="text-lg px-8 py-6"
+              onClick={() => setShowFocusMode(true)}
+            >
+              <Timer className="w-5 h-5 mr-2" />
+              Experimentar Modo Foco
             </Button>
           </div>
 
@@ -839,6 +860,7 @@ export default function Home() {
       {/* Modais */}
       {renderLoginModal()}
       {renderPaymentModal()}
+      {renderFocusModeOverlay()}
     </div>
   )
 }

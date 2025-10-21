@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  Brain, 
-  Target, 
-  ArrowRight, 
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
+  Brain,
+  Target,
+  ArrowRight,
   ArrowLeft,
   RotateCcw,
   Trophy,
@@ -21,7 +21,8 @@ import {
   Star,
   TrendingUp,
   Award,
-  Lightbulb
+  Lightbulb,
+  X
 } from 'lucide-react'
 
 interface Question {
@@ -42,7 +43,13 @@ interface SimulationResult {
   subjectPerformance: { [key: string]: { correct: number; total: number } }
 }
 
-export default function SimulationMode() {
+interface SimulationModeProps {
+  onExit?: () => void
+  title?: string
+  description?: string
+}
+
+export default function SimulationMode({ onExit, title, description }: SimulationModeProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [answers, setAnswers] = useState<(number | null)[]>([])
@@ -191,6 +198,11 @@ export default function SimulationMode() {
     setTotalTime(0)
   }
 
+  const handleExit = () => {
+    restartSimulation()
+    onExit?.()
+  }
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -206,18 +218,29 @@ export default function SimulationMode() {
     }
   }
 
+  const simulationTitle = title ?? 'Simulado ENEM'
+  const simulationDescription = description ?? 'Teste seus conhecimentos com questões selecionadas'
+
   if (!simulationStarted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
         <div className="max-w-4xl mx-auto">
+          {onExit && (
+            <div className="flex justify-end mb-4">
+              <Button variant="ghost" onClick={handleExit} aria-label="Fechar simulado">
+                <X className="w-4 h-4 mr-2" />
+                Fechar
+              </Button>
+            </div>
+          )}
           <Card className="mb-8">
             <CardHeader className="text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Brain className="w-8 h-8 text-white" />
               </div>
-              <CardTitle className="text-3xl">Simulado ENEM</CardTitle>
+              <CardTitle className="text-3xl">{simulationTitle}</CardTitle>
               <CardDescription className="text-lg">
-                Teste seus conhecimentos com questões selecionadas
+                {simulationDescription}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -281,10 +304,18 @@ export default function SimulationMode() {
   if (isFinished) {
     const results = calculateResults()
     const percentage = Math.round((results.correct / results.total) * 100)
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
         <div className="max-w-4xl mx-auto">
+          {onExit && (
+            <div className="flex justify-end mb-4">
+              <Button variant="ghost" onClick={handleExit} aria-label="Fechar simulado">
+                <X className="w-4 h-4 mr-2" />
+                Fechar
+              </Button>
+            </div>
+          )}
           <Card className="mb-8">
             <CardHeader className="text-center">
               <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 ${
@@ -399,6 +430,14 @@ export default function SimulationMode() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
       <div className="max-w-4xl mx-auto">
+        {onExit && (
+          <div className="flex justify-end mb-4">
+            <Button variant="ghost" onClick={handleExit} aria-label="Fechar simulado">
+              <X className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
+        )}
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
